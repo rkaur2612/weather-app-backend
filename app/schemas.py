@@ -36,3 +36,15 @@ class WeatherResponse(BaseModel):
 
     class Config:
         from_attributes = True  # allows compatibility with SQLAlchemy models
+
+# class WeatherOut(BaseModel):
+#     id: int
+#     location: str
+#     date: date
+#     temperature: float
+#     description: str
+#     humidity: float
+#     wind_speed: float
+
+#     class Config:
+#         from_attributes = True
