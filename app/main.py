@@ -1,11 +1,12 @@
-#backup main
-
 from fastapi import FastAPI, Request, Form, Depends
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import requests
+import csv
+from typing import List
+from io import StringIO
 
 from app.database import SessionLocal, engine
 import app.models as models
@@ -30,21 +31,6 @@ def get_db():
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
-
-# Route to search valid locations
-# @app.get("/search_location", response_class=HTMLResponse)
-# def search_location(request: Request, q: str):
-#     try:
-#         response = requests.get(
-#             "https://api.weatherapi.com/v1/search.json",
-#             params={"key": "04dcb7c9e5154d13a68191510252808", "q": q}
-#         )
-#         locations = response.json()
-#         # Return list of names
-#         location_names = [loc["name"] + (", " + loc["region"] if loc.get("region") else "") for loc in locations]
-#         return {"locations": location_names}
-#     except Exception as e:
-#         return {"locations": [], "error": str(e)}
     
 # Route to search valid locations (autocomplete)
 @app.get("/search_location", response_class=JSONResponse)
@@ -186,3 +172,33 @@ def get_weather(
         return templates.TemplateResponse(
             "index.html", {"request": request, "error": str(e)}
         )
+    
+@app.get("/weather")
+def get_all_weather(db: Session = Depends(get_db)):
+    records = db.query(models.Weather).all()
+    return records
+
+@app.get("/export/csv")
+def export_weather_csv(db: Session = Depends(get_db)):
+    # Fetch all weather records
+    records = db.query(models.Weather).all()
+    
+    # Create a CSV in memory
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(["Location", "Date", "Temperature(°C)", "Description", "Humidity(%)", "Wind Speed(kph)"])
+    
+    # Write data rows
+    for rec in records:
+        writer.writerow([rec.location, rec.date, rec.temperature, rec.description, rec.humidity, rec.wind_speed])
+    
+    output.seek(0)
+    
+    # Return as downloadable file
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=weather_data.csv"}
+    )

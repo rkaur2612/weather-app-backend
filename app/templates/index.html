@@ -119,6 +119,33 @@
     </div>
     {% endif %}
 
+    <div class="results">
+    <h2>All Weather Records</h2>
+    <button id="view-all-btn" style="margin-bottom: 15px;">View All Weather Records</button>
+    <table id="weather-table" border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; display:none;">
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Temperature (°C)</th>
+                <th>Description</th>
+                <th>Humidity (%)</th>
+                <th>Wind Speed (kph)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    </div>
+
+    <!-- CSV Download Button -->
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/export/csv" target="_blank">
+            <button type="button" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
+                Download Weather Data
+            </button>
+        </a>
+    </div>
+
     <script>
         const locationInput = document.getElementById("location");
         const suggestionsBox = document.getElementById("location_suggestions");
@@ -195,6 +222,36 @@
 
         document.getElementById('end_date').setAttribute('min', formatDate(today));
         document.getElementById('end_date').setAttribute('max', formatDate(maxDate));
+
+        document.getElementById("view-all-btn").addEventListener("click", async () => {
+        try {
+            const res = await fetch("/weather"); // GET request
+            const data = await res.json();
+
+            const table = document.getElementById("weather-table");
+            const tbody = table.querySelector("tbody");
+            tbody.innerHTML = ""; // clear previous rows
+
+            data.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.location}</td>
+                    <td>${item.date}</td>
+                    <td>${item.temperature ?? "-"}</td>
+                    <td>${item.description ?? "-"}</td>
+                    <td>${item.humidity ?? "-"}</td>
+                    <td>${item.wind_speed ?? "-"}</td>
+            `   ;
+                tbody.appendChild(row);
+            });
+
+            table.style.display = "table"; // show table
+
+        } catch (err) {
+            alert("Error fetching weather data: " + err);
+        }
+    });
     </script>
+
 </body>
 </html>
