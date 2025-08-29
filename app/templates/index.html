@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f6f8;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .autocomplete-suggestions {
+            border: 1px solid #ccc;
+            background: #fff;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            width: calc(100% - 40px); /* match form padding */
+            z-index: 10;
+        }
+        .autocomplete-suggestion {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .autocomplete-suggestion:hover {
+            background-color: #f0f0f0;
+        }
+        .results {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .weather-entry {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .weather-entry:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather App</h1>
+    
+    <!-- Input Form -->
+    <form action="/weather" method="post" autocomplete="off">
+        <label for="location">Enter Location:</label>
+        <input type="text" id="location" name="location" placeholder="Start typing and select a location from suggestions" required>
+        <div id="location_suggestions" class="autocomplete-suggestions" style="display:none;"></div>
+
+        <!-- new div for inline error -->
+        <div id="location-error" style="color:red; font-size:0.9em; margin-bottom:10px;"></div>
+        <small style="display:block; color:#555; margin-bottom:10px;">
+             Please select a location from the dropdown suggestions.
+        </small>
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" required>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" required>
+
+        <button type="submit">Get Weather</button>
+    </form>
+
+    <!-- Display Errors -->
+    {% if error %}
+    <div class="results">
+        <p style="color:red;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Display Weather Results -->
+    {% if weather_data %}
+    <div class="results">
+        <h2>Weather Results for {{ weather_data[0].location }}</h2>
+        {% for entry in weather_data %}
+        <div class="weather-entry">
+            <strong>Date:</strong> {{ entry.date }}<br>
+            <strong>Temperature:</strong> {{ entry.temperature }}°C<br>
+            <strong>Description:</strong> {{ entry.description }}<br>
+            <strong>Humidity:</strong> {{ entry.humidity }}%<br>
+            <strong>Wind Speed:</strong> {{ entry.wind_speed }} kph
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        const locationInput = document.getElementById("location");
+        const suggestionsBox = document.getElementById("location_suggestions");
+        let validLocations = []; // store current suggestions
+
+        locationInput.addEventListener("input", async () => {
+            const query = locationInput.value;
+            if (query.length < 2) {
+                suggestionsBox.style.display = "none";
+                validLocations = [];
+                return;
+            }
+
+            try {
+                const res = await fetch(`/search_location?q=${query}`);
+                const data = await res.json();
+
+                suggestionsBox.innerHTML = "";
+                validLocations = [];
+
+                if (data.locations && data.locations.length > 0) {
+                    data.locations.forEach(loc => {
+                        const div = document.createElement("div");
+                        div.textContent = loc;
+                        div.classList.add("autocomplete-suggestion");
+                        div.addEventListener("click", () => {
+                            locationInput.value = loc;
+                            suggestionsBox.style.display = "none";
+                            validLocations = [loc]; // only the selected one is valid now
+                        });
+                        suggestionsBox.appendChild(div);
+                        validLocations.push(loc);
+                    });
+                    suggestionsBox.style.display = "block";
+                } else {
+                    suggestionsBox.style.display = "none";
+                }
+            } catch (err) {
+                console.error("Error fetching location suggestions:", err);
+                suggestionsBox.style.display = "none";
+                validLocations = [];
+            }
+        });
+
+        // Hide suggestions if user clicks outside
+        document.addEventListener("click", (e) => {
+            if (!locationInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = "none";
+            }
+        });
+
+        // Force form submission only if input matches a valid location
+        const form = document.querySelector("form");
+        form.addEventListener("submit", (e) => {
+            const errorBox = document.getElementById("location-error");
+            if (!validLocations.includes(locationInput.value)) {
+                e.preventDefault();
+                errorBox.textContent = "⚠️ Please select a valid location from the suggestions.";
+                locationInput.focus();
+            } else {
+                errorBox.textContent = "";
+            }
+        });
+
+        // Set min/max for date inputs dynamically
+        const today = new Date();
+        const maxDate = new Date();
+        maxDate.setDate(today.getDate() + 4); // 5-day forecast
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+
+        document.getElementById('start_date').setAttribute('min', formatDate(today));
+        document.getElementById('start_date').setAttribute('max', formatDate(maxDate));
+
+        document.getElementById('end_date').setAttribute('min', formatDate(today));
+        document.getElementById('end_date').setAttribute('max', formatDate(maxDate));
+    </script>
+</body>
+</html>
