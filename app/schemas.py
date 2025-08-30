@@ -48,3 +48,9 @@ class WeatherResponse(BaseModel):
 
 #     class Config:
 #         from_attributes = True
+
+# class WeatherUpdate(BaseModel):
+#     temperature: Optional[float] = None
+#     description: Optional[str] = None
+#     humidity: Optional[int] = None
+#     wind_speed: Optional[float] = None

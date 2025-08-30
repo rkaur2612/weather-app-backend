@@ -71,6 +71,35 @@
         .weather-entry:last-child {
             border-bottom: none;
         }
+        .center-heading {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .required-field {
+            border: 2px solid #007BFF;  /* bright blue border for required fields */
+            background-color: #f0f8ff;  /* light blue background */
+        }
+
+        input::placeholder {
+            color: #888;  /* gray out placeholder text */
+            font-style: italic;
+        }
+
+        .small-button {
+            width: auto;             /* let it size to content */
+            padding: 10px 20px;      /* nice padding */
+            background: #28a745;     /* green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .small-button:hover {
+            background: #218838;
+        }
+
     </style>
 </head>
 <body>
@@ -120,6 +149,33 @@
     {% endif %}
 
     <div class="results">
+        <h2>All Weather Records</h2>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <button id="view-all-btn">View All Weather Records</button>
+            <a href="/export/csv" target="_blank">
+                <button type="button" class="small-button" style="background:#28a745;">
+                    Download Weather Data
+                </button>
+            </a>
+        </div>
+        <table id="weather-table" border="1" cellpadding="8" cellspacing="0" 
+            style="width:100%; border-collapse: collapse; display:none;">
+            <thead>
+                <tr>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Temperature (°C)</th>
+                    <th>Description</th>
+                    <th>Humidity (%)</th>
+                    <th>Wind Speed (kph)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+
+    <!-- <div class="results">
     <h2>All Weather Records</h2>
     <button id="view-all-btn" style="margin-bottom: 15px;">View All Weather Records</button>
     <table id="weather-table" border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; display:none;">
@@ -135,16 +191,73 @@
         </thead>
         <tbody></tbody>
     </table>
-    </div>
+    </div> -->
 
     <!-- CSV Download Button -->
-    <div style="text-align:center; margin-top:20px;">
+    <!-- <div style="text-align:center; margin-top:20px;">
         <a href="/export/csv" target="_blank">
-            <button type="button" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
+            <button type="button" class="small-button" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
                 Download Weather Data
             </button>
         </a>
+    </div> -->
+
+    <h2 class="center-heading">Update Weather Record</h2>
+    <p style="text-align:center; color:#555; margin-bottom:15px;">
+        Fill the form below to update an existing weather record for a location on a specific date. 
+        Leave any field blank to keep its current value unchanged.
+    </p>
+    <form action="/weather/update" method="post" autocomplete="off">
+        <label for="update_location">Location:</label>
+        <input type="text" id="update_location" name="location" placeholder="Select location" required class="required-field">
+        <div id="update_location_suggestions" class="autocomplete-suggestions" style="display:none;"></div>
+
+        <label for="update_date">Date:</label>
+        <input type="date" id="update_date" name="date" required class="required-field">
+
+        <label for="update_temperature">Temperature (°C):</label>
+        <input type="number" step="0.1" id="update_temperature" name="temperature" placeholder="Leave blank to keep current value">
+
+        <label for="update_description">Description:</label>
+        <input type="text" id="update_description" name="description" placeholder="Leave blank to keep current value">
+
+        <label for="update_humidity">Humidity (%):</label>
+        <input type="number" id="update_humidity" name="humidity" placeholder="Leave blank to keep current value">
+
+        <label for="update_wind_speed">Wind Speed (kph):</label>
+        <input type="number" step="0.1" id="update_wind_speed" name="wind_speed" placeholder="Leave blank to keep current value">
+
+        <button type="submit">Update Weather</button>
+    </form>
+
+    {% if error_update %}
+    <div class="results">
+        <p style="color:red;">{{ error_update }}</p>
     </div>
+    {% endif %}
+
+    {% if success_update %}
+    <div class="results">
+        <p style="color:green;">{{ success_update }}</p>
+    </div>
+    {% endif %}
+
+     <!-- Display Updated Weather Results -->
+    {% if updated_weather %}
+    <div class="results">
+        <h2>Updated Weather Record</h2>
+        {% for entry in updated_weather %}
+        <div class="weather-entry">
+            <strong>Date:</strong> {{ entry.date }}<br>
+            <strong>Temperature:</strong> {{ entry.temperature }}°C<br>
+            <strong>Description:</strong> {{ entry.description }}<br>
+            <strong>Humidity:</strong> {{ entry.humidity }}%<br>
+            <strong>Wind Speed:</strong> {{ entry.wind_speed }} kph
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
 
     <script>
         const locationInput = document.getElementById("location");
@@ -252,6 +365,78 @@
         }
     });
     </script>
+
+    <script>
+        const updateLocationInput = document.getElementById("update_location");
+        const updateSuggestionsBox = document.getElementById("update_location_suggestions");
+        let validUpdateLocations = [];
+
+        updateLocationInput.addEventListener("input", async () => {
+            const query = updateLocationInput.value;
+            if (query.length < 2) {
+                updateSuggestionsBox.style.display = "none";
+                validUpdateLocations = [];
+                return;
+            }
+
+            try {
+                const res = await fetch(`/search_location?q=${query}`);
+                const data = await res.json();
+
+                updateSuggestionsBox.innerHTML = "";
+                validUpdateLocations = [];
+
+                if (data.locations && data.locations.length > 0) {
+                    data.locations.forEach(loc => {
+                        const div = document.createElement("div");
+                        div.textContent = loc;
+                        div.classList.add("autocomplete-suggestion");
+                        div.addEventListener("click", () => {
+                            updateLocationInput.value = loc;
+                            updateSuggestionsBox.style.display = "none";
+                            validUpdateLocations = [loc];
+                        });
+                        updateSuggestionsBox.appendChild(div);
+                        validUpdateLocations.push(loc);
+                    });
+                    updateSuggestionsBox.style.display = "block";
+                } else {
+                    updateSuggestionsBox.style.display = "none";
+                }
+            } catch (err) {
+                console.error("Error fetching location suggestions:", err);
+                updateSuggestionsBox.style.display = "none";
+                validUpdateLocations = [];
+            }
+        });
+
+        // Hide suggestions if user clicks outside
+        document.addEventListener("click", (e) => {
+            if (!updateLocationInput.contains(e.target) && !updateSuggestionsBox.contains(e.target)) {
+                updateSuggestionsBox.style.display = "none";
+            }
+        });
+
+        // Force form submission only if location is valid
+        const updateForm = document.querySelector("form[action='/weather/update']");
+        updateForm.addEventListener("submit", (e) => {
+            if (!validUpdateLocations.includes(updateLocationInput.value)) {
+                e.preventDefault();
+                alert("⚠️ Please select a valid location from the suggestions.");
+                updateLocationInput.focus();
+            }
+        });
+
+        // Set min/max for update date input
+        const updateToday = new Date();
+        const updateMaxDate = new Date();
+        updateMaxDate.setDate(updateToday.getDate() + 4);
+
+        const formatUpdateDate = (date) => date.toISOString().split('T')[0];
+
+        document.getElementById('update_date').setAttribute('min', formatUpdateDate(updateToday));
+        document.getElementById('update_date').setAttribute('max', formatUpdateDate(updateMaxDate));
+</script>
 
 </body>
 </html>
