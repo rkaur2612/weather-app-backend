@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, Depends
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -7,10 +7,10 @@ import requests
 import csv
 from typing import List
 from io import StringIO
-from fastapi import HTTPException
-
+from fastapi import HTTPException, status
 from app.database import SessionLocal, engine
 import app.models as models
+from fastapi.staticfiles import StaticFiles
 
 # Create tables if not exist
 models.Base.metadata.create_all(bind=engine)
@@ -19,6 +19,9 @@ app = FastAPI()
 
 # Setup Jinja2 templates folder
 templates = Jinja2Templates(directory="app/templates") 
+
+# Mount the 'static' folder
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Dependency to get DB session
 def get_db():
@@ -30,8 +33,14 @@ def get_db():
 
 # Home page route: shows the input form
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+def home(request: Request, success_delete: str = None): #type: ignore
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "success_delete": success_delete
+        }
+    )
     
 # Route to search valid locations (autocomplete)
 @app.get("/search_location", response_class=JSONResponse)
@@ -164,9 +173,37 @@ def get_weather(
                     })
 
             current += timedelta(days=1)
+        
+        # Fetch YouTube videos for the location
+        youtube_videos = []
+        try:
+            url = "https://www.googleapis.com/youtube/v3/search"
+            params = {
+                "part": "snippet",
+                "q": location,
+                "type": "video",
+                "maxResults": 4,
+                "key": "AIzaSyC_EuXYPqDzUkt1u9bF6bOUzxLXdNoLzmM"
+            }
+            yt_response = requests.get(url, params=params)
+            yt_data = yt_response.json()
+            for item in yt_data.get("items", []):
+                youtube_videos.append({
+                    "title": item["snippet"]["title"],
+                    "thumbnail": item["snippet"]["thumbnails"]["medium"]["url"],
+                    "video_url": f"https://www.youtube.com/watch?v={item['id']['videoId']}"
+                })
+        except Exception as e:
+            youtube_videos = []
 
         return templates.TemplateResponse(
-            "index.html", {"request": request, "weather_data": results}
+            "index.html",
+            {
+                "request": request,
+                "weather_data": results,
+                "youtube_videos": youtube_videos,
+                "location": location
+            }
         )
 
     except Exception as e:
@@ -177,7 +214,18 @@ def get_weather(
 @app.get("/weather")
 def get_all_weather(db: Session = Depends(get_db)):
     records = db.query(models.Weather).all()
-    return records
+    return [
+        {
+            "id": r.id,  # <-- include the unique ID
+            "location": r.location,
+            "date": r.date.strftime("%Y-%m-%d"),
+            "temperature": r.temperature,
+            "description": r.description,
+            "humidity": r.humidity,
+            "wind_speed": r.wind_speed
+        }
+        for r in records
+    ]
 
 @app.get("/export/csv")
 def export_weather_csv(db: Session = Depends(get_db)):
@@ -293,3 +341,46 @@ def update_weather(
         return templates.TemplateResponse(
             "index.html", {"request": request, "error_update": str(e)}
         )
+
+@app.post("/delete/{weather_id}")
+def delete_weather(weather_id: int, db: Session = Depends(get_db)):
+    weather_entry = db.query(models.Weather).filter_by(id=weather_id).first()
+    if not weather_entry:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    db.delete(weather_entry)
+    db.commit()
+
+    # Redirect back to home page with a success message
+    message = f"Weather record for {weather_entry.location} on {weather_entry.date.strftime('%Y-%m-%d')} deleted successfully."
+    return RedirectResponse(url=f"/?success_delete={message}", status_code=303)
+
+
+# YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
+# @app.get("/youtube_videos", response_class=HTMLResponse)
+# def youtube_videos(request: Request, location: str = "", max_results: int = 5):
+#     if not location:
+#         return templates.TemplateResponse("index.html", {"request": request, "error_youtube": "No location provided"})
+    
+
+#     # YouTube search API URL
+#     url = "https://www.googleapis.com/youtube/v3/search"
+#     params = {
+#         "part": "snippet",
+#         "q": location,
+#         "type": "video",
+#         "maxResults": max_results,
+#         "key": "AIzaSyC_EuXYPqDzUkt1u9bF6bOUzxLXdNoLzmM"
+#     }
+#     youtube_videos = []
+#     try:
+#         yt_response = requests.get(url, params=params)
+#         yt_data = yt_response.json()
+#         for item in yt_data.get("items", []):
+#             youtube_videos.append({
+#                 "title": item["snippet"]["title"],
+#                 "thumbnail": item["snippet"]["thumbnails"]["medium"]["url"],
+#                 "video_url": f"https://www.youtube.com/watch?v={item['id']['videoId']}"
+#             })
+#     except Exception as e:
+#         youtube_videos = []

@@ -3,105 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Weather App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background: #f4f6f8;
-        }
-        h1 {
-            text-align: center;
-        }
-        form {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-        input, button {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-        }
-        button {
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .autocomplete-suggestions {
-            border: 1px solid #ccc;
-            background: #fff;
-            max-height: 150px;
-            overflow-y: auto;
-            position: absolute;
-            width: calc(100% - 40px); /* match form padding */
-            z-index: 10;
-        }
-        .autocomplete-suggestion {
-            padding: 8px;
-            cursor: pointer;
-        }
-        .autocomplete-suggestion:hover {
-            background-color: #f0f0f0;
-        }
-        .results {
-            max-width: 600px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .weather-entry {
-            border-bottom: 1px solid #ddd;
-            padding: 10px 0;
-        }
-        .weather-entry:last-child {
-            border-bottom: none;
-        }
-        .center-heading {
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .required-field {
-            border: 2px solid #007BFF;  /* bright blue border for required fields */
-            background-color: #f0f8ff;  /* light blue background */
-        }
-
-        input::placeholder {
-            color: #888;  /* gray out placeholder text */
-            font-style: italic;
-        }
-
-        .small-button {
-            width: auto;             /* let it size to content */
-            padding: 10px 20px;      /* nice padding */
-            background: #28a745;     /* green */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .small-button:hover {
-            background: #218838;
-        }
-
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
     <h1>Weather App</h1>
     
@@ -148,6 +53,23 @@
     </div>
     {% endif %}
 
+    {% if youtube_videos %}
+    <div class="youtube-box">
+        <h3>YouTube Videos for {{ location }}</h3>
+        <div class="youtube-grid">
+            {% for video in youtube_videos %}
+            <div class="youtube-card">
+                <a href="{{ video.video_url }}" target="_blank">
+                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}" style="width:100%">
+                    <p>{{ video.title }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
     <div class="results">
         <h2>All Weather Records</h2>
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
@@ -168,39 +90,18 @@
                     <th>Description</th>
                     <th>Humidity (%)</th>
                     <th>Wind Speed (kph)</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-
-    <!-- <div class="results">
-    <h2>All Weather Records</h2>
-    <button id="view-all-btn" style="margin-bottom: 15px;">View All Weather Records</button>
-    <table id="weather-table" border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; display:none;">
-        <thead>
-            <tr>
-                <th>Location</th>
-                <th>Date</th>
-                <th>Temperature (°C)</th>
-                <th>Description</th>
-                <th>Humidity (%)</th>
-                <th>Wind Speed (kph)</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    </div> -->
-
-    <!-- CSV Download Button -->
-    <!-- <div style="text-align:center; margin-top:20px;">
-        <a href="/export/csv" target="_blank">
-            <button type="button" class="small-button" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
-                Download Weather Data
-            </button>
-        </a>
-    </div> -->
+    {% if success_delete %}
+    <div id="delete-message" style="margin-top:10px; color:green; text-align:center;">
+        {{ success_delete }}
+    </div>
+    {% endif %}
 
     <h2 class="center-heading">Update Weather Record</h2>
     <p style="text-align:center; color:#555; margin-bottom:15px;">
@@ -258,6 +159,21 @@
     </div>
     {% endif %}
 
+    <!-- Footer Section -->
+    <!-- <div id="footer" class="mt-8 p-4 border rounded shadow bg-white">
+    <h3 class="text-lg font-semibold mb-2">About This App</h3>
+    <p class="mb-2">
+        <strong>Developer:</strong> Ramandeep Kaur
+    </p>
+    <p class="mb-2">
+        <strong>PM Accelerator:</strong> The Product Manager Accelerator Program is designed to support PM professionals through every stage of their careers. From students looking for entry-level jobs to Directors looking to take on a leadership role, our program has helped over hundreds of students fulfill their career aspirations.
+        Our Product Manager Accelerator community are ambitious and committed. Through our program they have learnt, honed and developed new PM and leadership skills, giving them a strong foundation for their future endeavors.
+        Learn more on 
+        <a href="https://www.pmaccelerator.io/" target="_blank" class="text-blue-600 underline">
+        Website
+        </a>.
+    </p>
+    </div> -->
 
     <script>
         const locationInput = document.getElementById("location");
@@ -354,6 +270,14 @@
                     <td>${item.description ?? "-"}</td>
                     <td>${item.humidity ?? "-"}</td>
                     <td>${item.wind_speed ?? "-"}</td>
+                    <td>
+                    <!-- Delete form with confirmation -->
+                    <form action="/delete/${item.id}" method="post" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                        <button type="submit" class="action-button" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">
+                            Delete
+                        </button>
+                    </form>
+                    </td>
             `   ;
                 tbody.appendChild(row);
             });
@@ -437,6 +361,26 @@
         document.getElementById('update_date').setAttribute('min', formatUpdateDate(updateToday));
         document.getElementById('update_date').setAttribute('max', formatUpdateDate(updateMaxDate));
 </script>
+<script>
+    const msg = document.getElementById("delete-message");
+    if (msg) {
+        setTimeout(() => {
+            msg.style.display = "none";  // hides after 5 seconds
+        }, 5000);
+    }
+</script>
+
+<!-- Thin Footer Strip -->
+<footer class="footer">
+    <strong>Developed by Ramandeep Kaur</strong> | 
+    <strong>PM Accelerator</strong>: <a href="https://www.pmaccelerator.io/" target="_blank" style="color:#007BFF; text-decoration:underline;">Website</a>
+    <p>
+        <strong>PM Accelerator:</strong> The Product Manager Accelerator Program is designed to support PM professionals through every stage of their careers. From students looking for entry-level jobs to Directors seeking leadership roles, our program has helped hundreds of students achieve their career aspirations.
+        Our Product Manager Accelerator community is ambitious and committed. Through our program, participants have learned, honed, and developed new PM and leadership skills, giving them a strong foundation for future endeavors.
+        Learn more on our Website.
+    </p>
+</footer>
+
 
 </body>
 </html>
