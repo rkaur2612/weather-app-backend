@@ -7,6 +7,7 @@ import requests
 import csv
 from typing import List
 from io import StringIO
+from fastapi import HTTPException
 
 from app.database import SessionLocal, engine
 import app.models as models
@@ -202,3 +203,93 @@ def export_weather_csv(db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=weather_data.csv"}
     )
+
+@app.post("/weather/update", response_class=HTMLResponse)
+def update_weather(
+    request: Request,
+    location: str = Form(...),
+    date: str = Form(...),
+    temperature: str = Form(""),
+    description: str = Form(""),
+    humidity: str = Form(""),
+    wind_speed: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Parse and validate date
+        try:
+            record_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return templates.TemplateResponse(
+                "index.html", {"request": request, "error_update": "Invalid date format"}
+            )
+
+        # Find record
+        weather_entry = db.query(models.Weather).filter_by(location=location, date=record_date).first()
+        if not weather_entry:
+            return templates.TemplateResponse(
+                "index.html", {"request": request, "error_update": f"No record found for {location} on {date}"}
+            )
+
+        # Update temperature if provided
+        if temperature.strip() != "":
+            try:
+                temp_val = float(temperature)
+                if temp_val < -100 or temp_val > 100:
+                    return templates.TemplateResponse(
+                        "index.html", {"request": request, "error_update": "Temperature out of range. Please enter a value between -100°C and 100°C."}
+                    )
+                weather_entry.temperature = temp_val # type: ignore
+            except ValueError:
+                return templates.TemplateResponse(
+                    "index.html", {"request": request, "error_update": "Invalid temperature. Please enter a valid number (e.g., 23.5)."}
+                )
+
+        # Update humidity if provided
+        if humidity.strip() != "":
+            try:
+                hum_val = int(humidity)
+                if hum_val < 0 or hum_val > 100:
+                    return templates.TemplateResponse(
+                        "index.html", {"request": request, "error_update": "Humidity out of range. Please enter a value between 0% and 100%."}
+                    )
+                weather_entry.humidity = hum_val # type: ignore
+            except ValueError:
+                return templates.TemplateResponse(
+                    "index.html", {"request": request, "error_update": "Invalid humidity. Please enter a whole number (e.g., 55)."}
+                )
+
+        # Update wind_speed if provided
+        if wind_speed.strip() != "":
+            try:
+                wind_val = float(wind_speed)
+                if wind_val < 0:
+                    return templates.TemplateResponse(
+                        "index.html", {"request": request, "error_update": "Wind speed cannot be negative. Please enter a value of 0 or higher"}
+                    )
+                weather_entry.wind_speed = wind_val # type: ignore
+            except ValueError:
+                return templates.TemplateResponse(
+                    "index.html", {"request": request, "error_update": "Invalid wind speed. Please enter a valid number"}
+                )
+
+        # Update description if provided
+        if description.strip() != "":
+            weather_entry.description = description # type: ignore
+
+        db.commit()
+        db.refresh(weather_entry)
+
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "success_update": f"Weather record for {location} on {date} updated successfully",
+                "updated_weather": [weather_entry]  # optionally show updated record
+            }
+        )
+
+    except Exception as e:
+        return templates.TemplateResponse(
+            "index.html", {"request": request, "error_update": str(e)}
+        )
