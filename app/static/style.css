@@ -1,0 +1,198 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background: #f4f6f8;
+}
+h1 {
+    text-align: center;
+}
+form {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+label {
+    display: block;
+    margin: 10px 0 5px;
+}
+input, button {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+}
+button {
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+.autocomplete-suggestions {
+    border: 1px solid #ccc;
+    background: #fff;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    width: calc(100% - 40px); /* match form padding */
+    z-index: 10;
+}
+.autocomplete-suggestion {
+    padding: 8px;
+    cursor: pointer;
+}
+.autocomplete-suggestion:hover {
+    background-color: #f0f0f0;
+}
+.results {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.weather-entry {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+.weather-entry:last-child {
+    border-bottom: none;
+}
+.center-heading {
+    text-align: center;
+    margin-bottom: 5px;
+}
+.required-field {
+    border: 2px solid #007BFF;  /* bright blue border for required fields */
+    background-color: #f0f8ff;  /* light blue background */
+}
+
+input::placeholder {
+    color: #888;  /* gray out placeholder text */
+    font-style: italic;
+}
+
+.small-button {
+    width: auto;             /* let it size to content */
+    padding: 10px 20px;      /* nice padding */
+    background: #28a745;     /* green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.small-button:hover {
+    background: #218838;
+}
+
+/* Table layout adjustments */
+#weather-table {
+    width: 100%;
+    table-layout: auto; /* allow columns to adjust width */
+    border-collapse: collapse;
+}
+
+/* Table header & data styling */
+#weather-table th, #weather-table td {
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word; /* wrap long text/buttons */
+}
+
+.action-button {
+    padding: 5px 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.action-button:hover {
+    background-color: #c82333;
+}
+
+.youtube-box {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Section heading */
+.youtube-box h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Grid layout for videos */
+.youtube-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+/* Individual video card */
+.youtube-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0px 1px 4px rgba(0,0,0,0.08);
+}
+
+.youtube-card:hover {
+    transform: scale(1.05);
+}
+
+/* Thumbnail image */
+.youtube-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Video title */
+.youtube-card p {
+    font-size: 14px;
+    padding: 10px;
+    color: #444;
+    font-weight: 500;
+}
+
+/* Footer styling */
+.footer {
+    width: 100%;
+    background: #e0e7ef;  /* soft complementary blue-gray */
+    border-top: 1px solid #ccc;
+    padding: 20px;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #333;
+    margin-top: 40px; /* space above footer */
+    border-radius: 8px 8px 0 0; /* slightly rounded top corners */
+    line-height: 1.4;
+}
+
+.footer a {
+    color: #007BFF;
+    text-decoration: underline;
+}
+
+.footer p {
+    margin-top: 10px;
+}
