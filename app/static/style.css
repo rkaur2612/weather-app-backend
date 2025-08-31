@@ -80,9 +80,9 @@ input::placeholder {
 }
 
 .small-button {
-    width: auto;             /* let it size to content */
-    padding: 10px 20px;      /* nice padding */
-    background: #28a745;     /* green */
+    width: auto;             /* size to content */
+    padding: 10px 20px;     
+    background: #28a745;     
     color: white;
     border: none;
     border-radius: 5px;
@@ -177,14 +177,14 @@ input::placeholder {
 /* Footer styling */
 .footer {
     width: 100%;
-    background: #e0e7ef;  /* soft complementary blue-gray */
+    background: #e0e7ef;
     border-top: 1px solid #ccc;
     padding: 20px;
     text-align: left;
     font-size: 0.9rem;
     color: #333;
     margin-top: 40px; /* space above footer */
-    border-radius: 8px 8px 0 0; /* slightly rounded top corners */
+    border-radius: 8px 8px 0 0;
     line-height: 1.4;
 }
 

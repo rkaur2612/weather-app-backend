@@ -159,22 +159,6 @@
     </div>
     {% endif %}
 
-    <!-- Footer Section -->
-    <!-- <div id="footer" class="mt-8 p-4 border rounded shadow bg-white">
-    <h3 class="text-lg font-semibold mb-2">About This App</h3>
-    <p class="mb-2">
-        <strong>Developer:</strong> Ramandeep Kaur
-    </p>
-    <p class="mb-2">
-        <strong>PM Accelerator:</strong> The Product Manager Accelerator Program is designed to support PM professionals through every stage of their careers. From students looking for entry-level jobs to Directors looking to take on a leadership role, our program has helped over hundreds of students fulfill their career aspirations.
-        Our Product Manager Accelerator community are ambitious and committed. Through our program they have learnt, honed and developed new PM and leadership skills, giving them a strong foundation for their future endeavors.
-        Learn more on 
-        <a href="https://www.pmaccelerator.io/" target="_blank" class="text-blue-600 underline">
-        Website
-        </a>.
-    </p>
-    </div> -->
-
     <script>
         const locationInput = document.getElementById("location");
         const suggestionsBox = document.getElementById("location_suggestions");
@@ -358,8 +342,8 @@
 
         const formatUpdateDate = (date) => date.toISOString().split('T')[0];
 
-        document.getElementById('update_date').setAttribute('min', formatUpdateDate(updateToday));
-        document.getElementById('update_date').setAttribute('max', formatUpdateDate(updateMaxDate));
+        document.getElementById('update_date').setAttribute('min');
+        document.getElementById('update_date').setAttribute('max');
 </script>
 <script>
     const msg = document.getElementById("delete-message");
