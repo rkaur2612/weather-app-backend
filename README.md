@@ -38,6 +38,9 @@ Search <b>5-day weather forecast</b> for a location (City, State)
 1. <b>OpenWeatherMap API</b> - Fetches real-time weather data (temperature, humidity, description, etc.) for a given location.<br/>
 2. <b>YouTube Data API v3</b> - Retrieves video content related to a searched city (e.g., travel guides, news, or vlogs) to enhance user experience
 
+<h2>Flowchart</h2>
+<img width="768" height="355" alt="weather_app_flowchart" src="https://github.com/user-attachments/assets/74554119-12d5-44ec-b1ff-e6b1c4c6b9fd" />
+
 <h2>Backend Perspective</h2>
 
 Here’s how your FastAPI backend handles the core operations:
