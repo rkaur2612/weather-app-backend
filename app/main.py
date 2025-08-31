@@ -354,33 +354,3 @@ def delete_weather(weather_id: int, db: Session = Depends(get_db)):
     # Redirect back to home page with a success message
     message = f"Weather record for {weather_entry.location} on {weather_entry.date.strftime('%Y-%m-%d')} deleted successfully."
     return RedirectResponse(url=f"/?success_delete={message}", status_code=303)
-
-
-# YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
-# @app.get("/youtube_videos", response_class=HTMLResponse)
-# def youtube_videos(request: Request, location: str = "", max_results: int = 5):
-#     if not location:
-#         return templates.TemplateResponse("index.html", {"request": request, "error_youtube": "No location provided"})
-    
-
-#     # YouTube search API URL
-#     url = "https://www.googleapis.com/youtube/v3/search"
-#     params = {
-#         "part": "snippet",
-#         "q": location,
-#         "type": "video",
-#         "maxResults": max_results,
-#         "key": "AIzaSyC_EuXYPqDzUkt1u9bF6bOUzxLXdNoLzmM"
-#     }
-#     youtube_videos = []
-#     try:
-#         yt_response = requests.get(url, params=params)
-#         yt_data = yt_response.json()
-#         for item in yt_data.get("items", []):
-#             youtube_videos.append({
-#                 "title": item["snippet"]["title"],
-#                 "thumbnail": item["snippet"]["thumbnails"]["medium"]["url"],
-#                 "video_url": f"https://www.youtube.com/watch?v={item['id']['videoId']}"
-#             })
-#     except Exception as e:
-#         youtube_videos = []

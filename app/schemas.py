@@ -35,22 +35,4 @@ class WeatherResponse(BaseModel):
     wind_speed: Optional[float]
 
     class Config:
-        from_attributes = True  # allows compatibility with SQLAlchemy models
-
-# class WeatherOut(BaseModel):
-#     id: int
-#     location: str
-#     date: date
-#     temperature: float
-#     description: str
-#     humidity: float
-#     wind_speed: float
-
-#     class Config:
-#         from_attributes = True
-
-# class WeatherUpdate(BaseModel):
-#     temperature: Optional[float] = None
-#     description: Optional[str] = None
-#     humidity: Optional[int] = None
-#     wind_speed: Optional[float] = None
+        from_attributes = True
