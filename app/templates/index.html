@@ -342,8 +342,8 @@
 
         const formatUpdateDate = (date) => date.toISOString().split('T')[0];
 
-        document.getElementById('update_date').setAttribute('min', formatUpdateDate(updateToday));
-        document.getElementById('update_date').setAttribute('max', formatUpdateDate(updateMaxDate));
+        document.getElementById('update_date').setAttribute('min');
+        document.getElementById('update_date').setAttribute('max');
 </script>
 <script>
     const msg = document.getElementById("delete-message");
