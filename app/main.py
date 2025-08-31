@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 from app.database import SessionLocal, engine
 import app.models as models
 from fastapi.staticfiles import StaticFiles
+import os
 
 # Create tables if not exist
 models.Base.metadata.create_all(bind=engine)
@@ -31,6 +32,10 @@ def get_db():
     finally:
         db.close()
 
+# Get API keys from environment variables
+WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY")
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
+
 # Home page route: shows the input form
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, success_delete: str = None): #type: ignore
@@ -48,10 +53,13 @@ def search_location(q: str):
     try:
         if not q or len(q) < 2:
             return {"locations": []}
+        
+        if not WEATHER_API_KEY:
+            return {"locations": [], "error": "Server missing WEATHER_API_KEY configuration."}
 
         response = requests.get(
             "https://api.weatherapi.com/v1/search.json",
-            params={"key": "04dcb7c9e5154d13a68191510252808", "q": q}
+            params={"key": WEATHER_API_KEY, "q": q}
         )
         locations = response.json()
 
@@ -95,9 +103,15 @@ def get_weather(
             )
 
         # First, validate location with API (call once)
+        if not WEATHER_API_KEY:
+            return templates.TemplateResponse(
+                "index.html",
+                {"request": request, "error": "Server missing WEATHER_API_KEY configuration."}
+            )
+        
         api_response = requests.get(
             "https://api.weatherapi.com/v1/forecast.json",
-            params={"key": "04dcb7c9e5154d13a68191510252808", "q": location, "days": 5}
+            params={"key": WEATHER_API_KEY, "q": location, "days": 5}
         )
         api_data = api_response.json()
         forecast_days = api_data.get("forecast", {}).get("forecastday", [])
@@ -176,6 +190,8 @@ def get_weather(
         
         # Fetch YouTube videos for the location
         youtube_videos = []
+        if not YOUTUBE_API_KEY:
+            youtube_videos = []
         try:
             url = "https://www.googleapis.com/youtube/v3/search"
             params = {
@@ -183,7 +199,7 @@ def get_weather(
                 "q": location,
                 "type": "video",
                 "maxResults": 4,
-                "key": "AIzaSyC_EuXYPqDzUkt1u9bF6bOUzxLXdNoLzmM"
+                "key": YOUTUBE_API_KEY
             }
             yt_response = requests.get(url, params=params)
             yt_data = yt_response.json()
