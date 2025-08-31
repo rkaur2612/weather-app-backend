@@ -112,12 +112,16 @@ Weather Table:<br/>
 
 3. <b>Run the FastAPI server</b><br/>
    From the root folder (weather-app-backend), run:
-   - uvicorn app.main:app --reload
+   - Setup environment variables
+      - $env:WEATHER_API_KEY="Actual API KEY" // Pate your API key here
+      - $env:YOUTUBE_API_KEY="Actual API Key" // Paste your API key here
+   
+   - Run :  uvicorn app.main:app --reload
 
        - app.main:app → points to main.py inside the app folder where app = FastAPI() is defined.
        - --reload → automatically reloads the server when you change code.
 
-4. <b>Open the app in your browser</b>:
+5. <b>Open the app in your browser</b>:
    - Got to http://127.0.0.1:8000/
    - You should see the Weather App homepage.
 
