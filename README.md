@@ -103,6 +103,9 @@ Weather Table:<br/>
 
 <h2>How to Run the App</h2>
 
+<b>Option 1</b>: Open https://weather-app-nulx.onrender.com/weather (App is deployed on render)
+
+<b>Option 2</b>: (Cloning Steps)
 1. <b>Clone the repository</b>
    - git clone https://github.com/rkaur2612/weather-app-backend.git
    - In terminal enter command : cd weather-app-backend
