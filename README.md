@@ -101,7 +101,7 @@ Weather Table:<br/>
 <h2>How to Run the App</h2>
 
 1. <b>Clone the repository</b>
-   - git clone <your-repo-url>
+   - git clone https://github.com/rkaur2612/weather-app-backend.git
    - In terminal enter command : cd weather-app-backend
 
 2. <b>Install dependencies</b>
