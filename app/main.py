@@ -12,6 +12,7 @@ from app.database import SessionLocal, engine
 import app.models as models
 from fastapi.staticfiles import StaticFiles
 import os
+from app.crud import generate_summary_llm
 
 # Create tables if not exist
 models.Base.metadata.create_all(bind=engine)
@@ -370,3 +371,14 @@ def delete_weather(weather_id: int, db: Session = Depends(get_db)):
     # Redirect back to home page with a success message
     message = f"Weather record for {weather_entry.location} on {weather_entry.date.strftime('%Y-%m-%d')} deleted successfully."
     return RedirectResponse(url=f"/?success_delete={message}", status_code=303)
+
+if __name__ == "__main__":
+    summary = generate_summary_llm(
+        location="San Ramon",
+        date="2025-12-12",
+        temp="28",
+        humidity="72",
+        wind_speed="10",
+        description="Sunny"
+    )
+    print(summary)

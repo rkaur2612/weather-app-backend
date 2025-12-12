@@ -1,6 +1,15 @@
 from sqlalchemy.orm import Session
 from datetime import date
 from . import models, schemas
+from app.utils import weather_prompt_template
+from groq import Groq
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+import os
+
+# Load API key from .env
+load_dotenv()
 
 # -------------------------------
 # CREATE: Add weather records
@@ -62,3 +71,45 @@ def delete_weather(db: Session, weather_id: int):
     db.delete(db_weather)
     db.commit()
     return True
+
+# ----------------------------------
+# LLM Call to generate summary
+# ----------------------------------
+# creating object of ChatGroq
+llm_model = ChatGroq(
+    model="llama-3.1-8b-instant",
+    max_tokens=250,
+    temperature=0.7
+)
+
+def generate_summary_llm(location, date, temp, humidity, wind_speed, description):
+    # Inject dynamic variables into the prompt using invoke
+    prompt_value = weather_prompt_template.invoke({
+        "location": location,
+        "date": date,
+        "temp": temp,
+        "humidity": humidity,
+        "wind_speed": wind_speed,
+        "description": description,
+    })
+    
+    # Convert Prompt Value to string for the LLM
+    # prompt_text = prompt_value.to_string()
+    # messages = [
+    # SystemMessage(content="You are a helpful weather assistant."),
+    # HumanMessage(content=prompt_text)
+    # ]
+    # Generate response from ChatGroq
+    # response = llm_model.invoke(messages)
+    # response = llm_model.invoke(
+    #     messages=[
+    #         (SystemMessage(content = "You are a helpful weather assistant.")),
+    #         (HumanMessage(content = prompt_text))
+    #     ]
+    # )
+    response = llm_model.invoke(prompt_value)
+
+    #messages.append(AIMessage(content = response.content))
+
+    return response.content
+    #return (AIMessage(messages))
