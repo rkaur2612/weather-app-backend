@@ -1,6 +1,17 @@
 from sqlalchemy.orm import Session
 from datetime import date
 from . import models, schemas
+from app.utils import weather_prompt_template
+from groq import Groq
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
+import os
+
+# Load API key from .env
+load_dotenv()
 
 # -------------------------------
 # CREATE: Add weather records
@@ -62,3 +73,44 @@ def delete_weather(db: Session, weather_id: int):
     db.delete(db_weather)
     db.commit()
     return True
+
+# ----------------------------------
+# LLM Call to generate summary
+# ----------------------------------
+
+# Building json schema to enforce structured output
+weather_schema = {
+    "title": "WeatherSummary",
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string"},
+        "clothes": {"type": "string"},
+        "precautions": {"type": "string"}
+    },
+    "required": ["summary", "clothes", "precautions"]
+}
+
+# creating object of ChatGroq
+llm_model = ChatGroq(
+    model="llama-3.1-8b-instant",
+    max_tokens=250,
+    temperature=0.7
+)
+
+structured_model = llm_model.with_structured_output(weather_schema)
+
+def generate_summary_llm(location, date, temp, humidity, wind_speed, description):
+    # Inject dynamic variables into the prompt using invoke
+    prompt_value = weather_prompt_template.invoke({
+        "location": location,
+        "date": date,
+        "temp": temp,
+        "humidity": humidity,
+        "wind_speed": wind_speed,
+        "description": description,
+    })
+    
+    response = structured_model.invoke(prompt_value)
+
+    # this is a dictionary
+    return response

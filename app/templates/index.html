@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Weather App</title>
+    <title>ClimaSense AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <h1>Weather App</h1>
+    <h1>ClimaSense AI</h1>
+    <h4 style="text-align: center;">Weather Forecast Intelligence Platform</h4>
+
     
     <!-- Input Form -->
     <form action="/weather" method="post" autocomplete="off">
@@ -38,7 +40,7 @@
     {% endif %}
 
     <!-- Display Weather Results -->
-    {% if weather_data %}
+    <!-- {% if weather_data %}
     <div class="results">
         <h2>Weather Results for {{ weather_data[0].location }}</h2>
         {% for entry in weather_data %}
@@ -51,7 +53,47 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %} -->
+
+    {% if weather_data %}
+    <div class="results">
+        <h2 style="text-align:center;">
+            Weather Summary ({{ weather_data|length }} {{ "day" if weather_data|length == 1 else "days" }}) — {{ weather_data[0].location }}
+        </h2>
+
+        {% for entry in weather_data %}
+        <div class="weather-card">
+
+            <h3 class="weather-date">{{ entry.date }}</h3>
+
+            <div class="summary-section">
+                <h4>🌤️ Summary</h4>
+                <p>{{ entry.summary }}</p>
+            </div>
+
+            <div class="clothes-section">
+                <h4>👕 Clothing Suggestions</h4>
+                <p>{{ entry.clothes }}</p>
+            </div>
+
+            <div class="precautions-section">
+                <h4>⚠️ Precautions</h4>
+                <p>{{ entry.precautions }}</p>
+            </div>
+
+            <details class="raw-details">
+                <summary>Show Raw Weather Data</summary>
+                <p><strong>Temperature:</strong> {{ entry.temperature }}°C</p>
+                <p><strong>Description:</strong> {{ entry.description }}</p>
+                <p><strong>Humidity:</strong> {{ entry.humidity }}%</p>
+                <p><strong>Wind Speed:</strong> {{ entry.wind_speed }} kph</p>
+            </details>
+
+        </div>
+        {% endfor %}
+    </div>
     {% endif %}
+
 
     {% if youtube_videos %}
     <div class="youtube-box">
@@ -71,12 +113,12 @@
 
 
     <div class="results">
-        <h2>All Weather Records</h2>
+        <h2>Weather History</h2>
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
-            <button id="view-all-btn">View All Weather Records</button>
+            <button id="view-all-btn">View Weather History</button>
             <a href="/export/csv" target="_blank">
                 <button type="button" class="small-button" style="background:#28a745;">
-                    Download Weather Data
+                    Download Data
                 </button>
             </a>
         </div>
@@ -355,7 +397,7 @@
 </script>
 
 <!-- Thin Footer Strip -->
-<footer class="footer">
+<!-- <footer class="footer">
     <strong>Developed by Ramandeep Kaur</strong> | 
     <strong>PM Accelerator</strong>: <a href="https://www.pmaccelerator.io/" target="_blank" style="color:#007BFF; text-decoration:underline;">Website</a>
     <p>
@@ -363,7 +405,7 @@
         Our Product Manager Accelerator community is ambitious and committed. Through our program, participants have learned, honed, and developed new PM and leadership skills, giving them a strong foundation for future endeavors.
         Learn more on our Website.
     </p>
-</footer>
+</footer> -->
 
 
 </body>
