@@ -6,6 +6,8 @@ from groq import Groq
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
 import os
 
 # Load API key from .env
@@ -75,12 +77,27 @@ def delete_weather(db: Session, weather_id: int):
 # ----------------------------------
 # LLM Call to generate summary
 # ----------------------------------
+
+# Building json schema to enforce structured output
+weather_schema = {
+    "title": "WeatherSummary",
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string"},
+        "clothes": {"type": "string"},
+        "precautions": {"type": "string"}
+    },
+    "required": ["summary", "clothes", "precautions"]
+}
+
 # creating object of ChatGroq
 llm_model = ChatGroq(
     model="llama-3.1-8b-instant",
     max_tokens=250,
     temperature=0.7
 )
+
+structured_model = llm_model.with_structured_output(weather_schema)
 
 def generate_summary_llm(location, date, temp, humidity, wind_speed, description):
     # Inject dynamic variables into the prompt using invoke
@@ -93,23 +110,7 @@ def generate_summary_llm(location, date, temp, humidity, wind_speed, description
         "description": description,
     })
     
-    # Convert Prompt Value to string for the LLM
-    # prompt_text = prompt_value.to_string()
-    # messages = [
-    # SystemMessage(content="You are a helpful weather assistant."),
-    # HumanMessage(content=prompt_text)
-    # ]
-    # Generate response from ChatGroq
-    # response = llm_model.invoke(messages)
-    # response = llm_model.invoke(
-    #     messages=[
-    #         (SystemMessage(content = "You are a helpful weather assistant.")),
-    #         (HumanMessage(content = prompt_text))
-    #     ]
-    # )
-    response = llm_model.invoke(prompt_value)
+    response = structured_model.invoke(prompt_value)
 
-    #messages.append(AIMessage(content = response.content))
-
-    return response.content
-    #return (AIMessage(messages))
+    # this is a dictionary
+    return response

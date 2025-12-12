@@ -373,12 +373,14 @@ def delete_weather(weather_id: int, db: Session = Depends(get_db)):
     return RedirectResponse(url=f"/?success_delete={message}", status_code=303)
 
 if __name__ == "__main__":
-    summary = generate_summary_llm(
-        location="San Ramon",
+    result = generate_summary_llm(
+        location="San Francisco",
         date="2025-12-12",
-        temp="28",
-        humidity="72",
-        wind_speed="10",
-        description="Sunny"
+        temp="8",
+        humidity="12",
+        wind_speed="15",
+        description="Rainy"
     )
-    print(summary)
+    print(result["summary"])
+    print(result["clothes"])
+    print(result["precautions"])
