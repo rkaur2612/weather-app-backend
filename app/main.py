@@ -123,6 +123,7 @@ def get_weather(
                 "index.html", {"request": request, "error": f"Location '{location}' not found or invalid."}
             )
 
+        # STEP 1: COLLECT RAW WEATHER FOR EACH DAY
         current = start
         results = []
 
@@ -189,7 +190,42 @@ def get_weather(
 
             current += timedelta(days=1)
         
-        # Fetch YouTube videos for the location
+        # STEP 2: LLM SUMMARIES FOR EACH DAY
+        final_output = []
+
+        for item in results:
+            if (
+                item["temperature"] is not None
+                and item["humidity"] is not None
+                and item["wind_speed"] is not None
+                and item["description"] is not None
+            ):
+                summary = generate_summary_llm(
+                    location=item["location"],
+                    date=item["date"],
+                    temp=item["temperature"],
+                    humidity=item["humidity"],
+                    wind_speed=item["wind_speed"],
+                    description=item["description"]
+                )
+
+                final_output.append({
+                     **item,  # keep raw weather data
+                     "summary": summary["summary"],
+                     "clothes": summary["clothes"],
+                     "precautions": summary["precautions"],
+                })
+            else:
+                final_output.append({
+                    **item,
+                    "summary": "No weather data available for this date.",
+                    "clothes": "N/A",
+                    "precautions": "N/A"
+                 })  
+                
+            print(final_output)
+        
+        # Step 3 # Fetch YouTube videos for the location
         youtube_videos = []
         if not YOUTUBE_API_KEY:
             youtube_videos = []
@@ -213,11 +249,12 @@ def get_weather(
         except Exception as e:
             youtube_videos = []
 
+        # STEP 4: RETURN EVERYTHING TO TEMPLATE
         return templates.TemplateResponse(
             "index.html",
             {
                 "request": request,
-                "weather_data": results,
+                "weather_data": final_output,
                 "youtube_videos": youtube_videos,
                 "location": location
             }
@@ -371,16 +408,3 @@ def delete_weather(weather_id: int, db: Session = Depends(get_db)):
     # Redirect back to home page with a success message
     message = f"Weather record for {weather_entry.location} on {weather_entry.date.strftime('%Y-%m-%d')} deleted successfully."
     return RedirectResponse(url=f"/?success_delete={message}", status_code=303)
-
-if __name__ == "__main__":
-    result = generate_summary_llm(
-        location="San Francisco",
-        date="2025-12-12",
-        temp="8",
-        humidity="12",
-        wind_speed="15",
-        description="Rainy"
-    )
-    print(result["summary"])
-    print(result["clothes"])
-    print(result["precautions"])
